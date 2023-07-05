@@ -1,17 +1,20 @@
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/colors.dart';
+import 'package:whatsapp_clone/common/utils/utils.dart';
 import 'package:whatsapp_clone/common/widgets/custom_button.dart';
+import 'package:whatsapp_clone/features/auth/repository/auth_repository.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
   static const routeName = 'login-screen';
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final phoneController = TextEditingController();
   Country? country;
 
@@ -29,6 +32,15 @@ class _LoginScreenState extends State<LoginScreen> {
             country = _country;
           });
         });
+  }
+
+  void sendPhoneNumber() {
+    String phoneNumber = phoneController.text.trim();
+    if (country != null && phoneNumber.isNotEmpty) {
+      ref.read(authRepositoryProvider).signInWithPhone(context, '+${country!.phoneCode}$phoneNumber');
+    }else{
+      showSnackBar(context: context, content: 'Fill out all the fields');
+    }
   }
 
   @override
@@ -56,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             TextButton(
                 onPressed: () {
-                  pickCountry(); 
+                  pickCountry();
                 },
                 child: const Text('Pick Country')),
             const SizedBox(
@@ -88,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
             // NEXT custom button
             SizedBox(
               width: 90,
-              child: CustomButton(text: 'NEXT', onPressed: () {}),
+              child: CustomButton(text: 'NEXT', onPressed: sendPhoneNumber),
             ),
           ],
         ),
