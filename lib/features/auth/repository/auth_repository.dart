@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +12,9 @@ final authRepositoryProvider = Provider((ref) => AuthRepository(
       auth: FirebaseAuth.instance,
       firestore: FirebaseFirestore.instance,
     ));
+
+  final String networkImage =
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmVhY2h8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=400&q=60';
 
 class AuthRepository {
   final FirebaseAuth auth;
@@ -52,10 +57,27 @@ class AuthRepository {
         smsCode: userOTP,
       );
       await auth.signInWithCredential(credential);
-      Navigator.pushNamedAndRemoveUntil(
+    Navigator.pushNamedAndRemoveUntil(
           context, UserInformationScreen.routeName, (route) => false);
     } on FirebaseAuthException catch (e) {
       showSnackBar(context: context, content: e.message.toString());
+    }
+  }
+
+  void saveUserDateToFirebase({
+    required String name,
+    required File? profilePic,
+    required ProviderRef ref,
+    required BuildContext context,
+  }) async {
+    try {
+      String uid = auth.currentUser!.uid;
+      String photoUrl = networkImage;
+      if (profilePic != null) {
+        
+      }
+    } catch (e) {
+      showSnackBar(context: context, content: e.toString());
     }
   }
 }
