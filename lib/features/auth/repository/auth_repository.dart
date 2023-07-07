@@ -116,6 +116,6 @@ class AuthRepository {
         .collection('users')
         .doc(userId)
         .snapshots()
-        .map((event) => UserModel.fromMap(event.data()!));
+        .map((event) => UserModel.fromMap(event.data()!)); 
   }
 }

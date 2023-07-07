@@ -34,7 +34,6 @@ class MobileChatScreen extends ConsumerWidget {
                   ),
                 ],
               );
-              ;
             }),
         actions: [
           IconButton(
