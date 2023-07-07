@@ -14,6 +14,8 @@ class SelectContactRepository {
 
   SelectContactRepository({required this.firestore});
 
+
+  // get list of contacts that are in phone
   Future<List<Contact>> getContacts() async {
     List<Contact> contacts = [];
     try {
@@ -26,6 +28,8 @@ class SelectContactRepository {
     return contacts;
   }
 
+
+  // chat with selected people who are in contacts
   void selectContact(Contact selectedContact, BuildContext context) async {
     try {
       var userCollection = await firestore.collection('users').get();
@@ -37,7 +41,12 @@ class SelectContactRepository {
             selectedContact.phones[0].number.replaceAll(' ', '');
         if (selectedPhoneNum == userData.phoneNumber) {
           isFound = true;
-          Navigator.pushNamed(context, MobileChatScreen.routeName);
+          Navigator.pushNamed(context, MobileChatScreen.routeName,
+          arguments: {
+            'name': userData.name,
+            "uid": userData.uid
+          },
+          );
         }
 
         if (!isFound) {
