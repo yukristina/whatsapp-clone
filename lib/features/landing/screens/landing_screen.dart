@@ -40,7 +40,7 @@ class LandingScreen extends StatelessWidget {
             ),
 
             SizedBox(
-              height: size.height / 9,
+              height: size.height / 12,
             ),
 
             // text

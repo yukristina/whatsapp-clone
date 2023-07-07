@@ -37,8 +37,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void sendPhoneNumber() {
     String phoneNumber = phoneController.text.trim();
     if (country != null && phoneNumber.isNotEmpty) {
-      ref.read(authRepositoryProvider).signInWithPhone(context, '+${country!.phoneCode}$phoneNumber');
-    }else{
+      ref
+          .read(authRepositoryProvider)
+          .signInWithPhone(context, '+${country!.phoneCode}$phoneNumber');
+    } else {
       showSnackBar(context: context, content: 'Fill out all the fields');
     }
   }
@@ -94,7 +96,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
 
             SizedBox(
-              height: size.height * 0.6,
+              height: size.height * 0.58,
             ),
 
             // NEXT custom button
