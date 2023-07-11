@@ -1,57 +1,64 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:whatsapp_clone/colors.dart';
-import 'package:whatsapp_clone/info.dart';
+import 'package:whatsapp_clone/common/widgets/loader.dart';
+import 'package:whatsapp_clone/features/chat/controller/chat_controller.dart';
 import 'package:whatsapp_clone/features/chat/screens/mobile_chat_screen.dart';
 import 'package:whatsapp_clone/models/chat_contact.dart';
 
-class ContactsList extends StatelessWidget {
+class ContactsList extends ConsumerWidget {
   const ContactsList({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
-        padding: const EdgeInsets.only(top: 10),
-        child: StreamBuilder<List<ChatContact>>(
-          stream: ,
-          builder: (context, snapshot) {
-            return ListView.builder(
+      padding: const EdgeInsets.only(top: 10),
+      child: StreamBuilder<List<ChatContact>>(
+        stream: ref.watch(chatControllerProvider).chatContacts(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Loader();
+          }
+
+          return ListView.builder(
               shrinkWrap: true,
-              itemCount: info.length,
+              itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
+                var chatContactData = snapshot.data![index];
                 return Column(
                   children: [
                     InkWell(
                       onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => const MobileChatScreen(
-                                  name: 'Jisoo',
-                                  uid: '12345',
-                                )));
+                        Navigator.pushNamed(context, MobileChatScreen.routeName, arguments: {
+                          'name': chatContactData.name,
+                          'uid': chatContactData.contactId
+                        },);
                       },
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: ListTile(
                           title: Text(
-                            info[index]['name'].toString(),
+                            chatContactData.name,
                             style: const TextStyle(fontSize: 18),
                           ),
                           subtitle: Padding(
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(
-                              info[index]['message'].toString(),
+                              chatContactData.lastMessage,
                               style: const TextStyle(fontSize: 15),
                             ),
                           ),
                           leading: CircleAvatar(
                             backgroundImage: NetworkImage(
-                              info[index]['profilePic'].toString(),
+                              chatContactData.profilePic.toString(),
                             ),
                             radius: 30,
                           ),
                           trailing: Text(
-                            info[index]['time'].toString(),
-                            style:
-                                const TextStyle(fontSize: 13, color: Colors.grey),
+                            DateFormat.Hm().format(chatContactData.timeSent),
+                            style: const TextStyle(
+                                fontSize: 13, color: Colors.grey),
                           ),
                         ),
                       ),
@@ -63,9 +70,9 @@ class ContactsList extends StatelessWidget {
                   ],
                 );
               });
-          },
-      
-        ),);
+        },
+      ),
+    );
   }
 }
 

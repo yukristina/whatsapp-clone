@@ -1,6 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/colors.dart';
-import 'package:whatsapp_clone/info.dart';
+import 'package:whatsapp_clone/models/message_model.dart';
 
 class MyMessageCard extends StatelessWidget {
   const MyMessageCard({
@@ -8,18 +9,21 @@ class MyMessageCard extends StatelessWidget {
     required this.message,
     required this.date,
     required this.index,
+    required this.messageData,
   });
 
   final String message;
   final String date;
   final int index;
+  final MessageModel messageData;
 
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: (messages[index]['isMe'] == true)
-          ? Alignment.centerRight
-          : Alignment.centerLeft,
+      alignment:
+          (messageData.senderId == FirebaseAuth.instance.currentUser!.uid)
+              ? Alignment.centerRight
+              : Alignment.centerLeft,
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width - 45,
@@ -29,7 +33,7 @@ class MyMessageCard extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          color: (messages[index]['isMe'] == true)
+          color: (messageData.senderId == FirebaseAuth.instance.currentUser!.uid)
               ? messageColor
               : senderMessageColor,
           margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
@@ -50,7 +54,7 @@ class MyMessageCard extends StatelessWidget {
                 ),
               ),
               Positioned(
-                bottom: (messages[index]['isMe'] == true) ? 4 : 2,
+                bottom: (messageData.senderId == FirebaseAuth.instance.currentUser!.uid) ? 4 : 2,
                 right: 10,
                 child: Row(
                   children: [
