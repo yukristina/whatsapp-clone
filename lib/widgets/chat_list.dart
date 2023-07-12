@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:whatsapp_clone/common/widgets/loader.dart';
 import 'package:whatsapp_clone/features/chat/controller/chat_controller.dart';
 import 'package:whatsapp_clone/models/message_model.dart';
-import 'package:whatsapp_clone/widgets/my_message_card.dart';
+import 'package:whatsapp_clone/features/chat/widgets/my_message_card.dart';
 
 class ChatList extends ConsumerStatefulWidget {
   const ChatList({required this.receiverUserId, super.key});
@@ -51,6 +51,7 @@ class _ChatListState extends ConsumerState<ChatList> {
                 date: timeSent,
                 index: index,
                 messageData: messageData,
+                type: messageData.type,
               );
             },
           );
