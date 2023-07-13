@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
-import 'package:enough_giphy_flutter/enough_giphy_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_sound/public/flutter_sound_recorder.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:whatsapp_clone/colors.dart';
 import 'package:whatsapp_clone/common/enums/message_enum.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
@@ -24,9 +26,30 @@ class _BottonChatFieldState extends ConsumerState<BottonChatField> {
   bool isShowSendButton = false;
 
   final TextEditingController _messageController = TextEditingController();
+  FlutterSoundRecorder? _soundRecorder;
+  bool isRecorderInit = false;
   bool isShowEmojiContainer = false;
+  bool isRecording = false;
   FocusNode focusNode = FocusNode();
 
+//  initializing audio recorder
+  @override
+  void initState() {
+    super.initState();
+    _soundRecorder = FlutterSoundRecorder();
+    openAudio();
+  }
+
+  void openAudio() async {
+    final status = await Permission.microphone.request();
+    if (status != PermissionStatus.granted) {
+      throw RecordingPermissionException('Mic permission not allowed');
+    }
+    await _soundRecorder!.openRecorder();
+    isRecorderInit = true;
+  }
+
+// for sending text message
   void sendTextMessage() async {
     if (isShowSendButton) {
       ref.read(chatControllerProvider).sendTextMessage(
@@ -35,9 +58,28 @@ class _BottonChatFieldState extends ConsumerState<BottonChatField> {
       setState(() {
         _messageController.text = '';
       });
+    } else {
+      // created temp path to save the audio before sending cause it isn't saved to firebase yet
+      var tempDir = await getTemporaryDirectory();
+      var path = '${tempDir.path}/flutter_sound.aac';
+      // if hasn't been initialized yet then return
+      if (!isRecorderInit) {
+        return;
+      }
+      // if has been initiazed then record
+      if (isRecording) {
+        await _soundRecorder!.stopRecorder();
+        sendFileMessage(File(path), MessageEnum.audio);
+      } else {
+        await _soundRecorder!.startRecorder(toFile: path);
+      }
+      setState(() {
+        isRecording != isRecording;
+      });
     }
   }
 
+// for checking what kinda file to send -- will be used in sending all kinda files
   void sendFileMessage(
     File file,
     MessageEnum messageEnum,
@@ -47,6 +89,7 @@ class _BottonChatFieldState extends ConsumerState<BottonChatField> {
         .sendFileMessage(context, file, widget.receiverUserId, messageEnum);
   }
 
+// sending images
   void selectImage() async {
     File? image = await pickImageFromGallery(context);
     if (image != null) {
@@ -54,6 +97,7 @@ class _BottonChatFieldState extends ConsumerState<BottonChatField> {
     }
   }
 
+// sending video
   void selectVideo() async {
     File? video = await pickVideoFromGallery(context);
     if (video != null) {
@@ -61,6 +105,7 @@ class _BottonChatFieldState extends ConsumerState<BottonChatField> {
     }
   }
 
+// sending GIFS
   void selectGIF() async {
     final gif = await pickGIF(context);
     if (gif != null) {
@@ -70,6 +115,7 @@ class _BottonChatFieldState extends ConsumerState<BottonChatField> {
     }
   }
 
+// showing and hiding keyboard and emoji container
   void hideEmojiContainer() {
     setState(() {
       isShowEmojiContainer = false;
@@ -95,10 +141,13 @@ class _BottonChatFieldState extends ConsumerState<BottonChatField> {
     }
   }
 
+// dispose methods for all functions
   @override
   void dispose() {
-    _messageController.dispose();
     super.dispose();
+    _messageController.dispose();
+    _soundRecorder!.closeRecorder();
+    isRecorderInit = false;
   }
 
   @override
@@ -192,7 +241,11 @@ class _BottonChatFieldState extends ConsumerState<BottonChatField> {
                 child: GestureDetector(
                   onTap: sendTextMessage,
                   child: Icon(
-                    isShowSendButton ? Icons.send : Icons.mic,
+                    isShowSendButton
+                        ? Icons.send
+                        : isRecording
+                            ? Icons.close
+                            : Icons.mic,
                     color: whiteColor,
                   ),
                 ),
