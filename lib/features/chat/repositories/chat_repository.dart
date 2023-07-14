@@ -110,17 +110,18 @@ class ChatRespository {
         .set(senderChatContact.toMap());
   }
 
-  void _saveMessageToMessageSubcollection(
-      {required String receiverUserId,
-      required String text,
-      required DateTime timeSent,
-      required String messageId,
-      required String username,
-      required String receiverUsername,
-      required MessageEnum messageType,
-      required MessageReply? messageReply,
-      required String senderUsername,
-      required String receiverUserName,}) async {
+  void _saveMessageToMessageSubcollection({
+    required String receiverUserId,
+    required String text,
+    required DateTime timeSent,
+    required String messageId,
+    required String username,
+    required String receiverUsername,
+    required MessageEnum messageType,
+    required MessageReply? messageReply,
+    required String senderUsername,
+    required String receiverUserName,
+  }) async {
     final message = MessageModel(
       senderId: auth.currentUser!.uid,
       receiverId: receiverUserId,
@@ -135,7 +136,8 @@ class ChatRespository {
           : messageReply.isMe
               ? senderUsername
               : receiverUserName,
-      repliedMessageType: messageReply ==null ? MessageEnum.text:messageReply.messageEnum,
+      repliedMessageType:
+          messageReply == null ? MessageEnum.text : messageReply.messageEnum,
     );
 
     // for receiver to see
@@ -250,7 +252,7 @@ class ChatRespository {
         username: senderUserData.name,
         receiverUsername: receiverUserData.name,
         messageType: messageEnum,
-          messageReply: messageReply,
+        messageReply: messageReply,
         receiverUserName: receiverUserData.name,
         senderUsername: senderUserData.name,
       );
@@ -287,10 +289,44 @@ class ChatRespository {
         messageId: messageId,
         receiverUsername: receiverUserData.name,
         username: senderUser.name,
-         messageReply: messageReply,
+        messageReply: messageReply,
         receiverUserName: receiverUserData.name,
         senderUsername: senderUser.name,
       );
+    } catch (e) {
+      showSnackBar(context: context, content: e.toString());
+    }
+  }
+
+  void setChatMessageSeen(
+    BuildContext context,
+    String receiverUserId,
+    String messageId,
+  ) async {
+    try {
+      // when receiver sees
+      await firestore
+          .collection('users')
+          .doc(auth.currentUser!.uid)
+          .collection('chats')
+          .doc(receiverUserId)
+          .collection('messages')
+          .doc(messageId)
+          .update({
+        'isSeen': true,
+      });
+
+      // when sender sees
+      await firestore
+          .collection('users')
+          .doc(receiverUserId)
+          .collection('chats')
+          .doc(auth.currentUser!.uid)
+          .collection('messages')
+          .doc(messageId)
+          .update({
+        'isSeen': true,
+      });
     } catch (e) {
       showSnackBar(context: context, content: e.toString());
     }

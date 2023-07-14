@@ -21,7 +21,6 @@ class ChatList extends ConsumerStatefulWidget {
 
 class _ChatListState extends ConsumerState<ChatList> {
   final ScrollController messageController = ScrollController();
-  
 
   @override
   void dispose() {
@@ -34,8 +33,10 @@ class _ChatListState extends ConsumerState<ChatList> {
     bool isMe,
     MessageEnum messageEnum,
   ) {
-    ref.read(messageReplyProvider.notifier).update((state) =>
-        MessageReply(message: message, isMe: isMe, messageEnum: messageEnum),);
+    ref.read(messageReplyProvider.notifier).update(
+          (state) => MessageReply(
+              message: message, isMe: isMe, messageEnum: messageEnum),
+        );
   }
 
   @override
@@ -60,6 +61,13 @@ class _ChatListState extends ConsumerState<ChatList> {
               final messageData = snapshot.data![index];
               var timeSent = DateFormat.Hm().format(messageData.timeSent);
 
+              if (!messageData.isSeen &&
+                  messageData.receiverId ==
+                      FirebaseAuth.instance.currentUser!.uid) {
+                ref.read(chatControllerProvider).setMessageSeen(
+                    context, widget.receiverUserId, messageData.messageId );
+              }
+
               return MyMessageCard(
                 message: messageData.text,
                 date: timeSent,
@@ -67,10 +75,19 @@ class _ChatListState extends ConsumerState<ChatList> {
                 messageData: messageData,
                 username: messageData.repliedTo,
                 repliedMessageType: messageData.repliedMessageType,
-                repliedText: messageData.repliedMessage, 
+                repliedText: messageData.repliedMessage,
                 type: messageData.type,
-                onLeftSwipe: ()=> onMessageSwipe(messageData.text, true, messageData.type,), 
-                onRightSwipe: () => onMessageSwipe(messageData.text, false, messageData.type,),
+                onLeftSwipe: () => onMessageSwipe(
+                  messageData.text,
+                  true,
+                  messageData.type,
+                ),
+                onRightSwipe: () => onMessageSwipe(
+                  messageData.text,
+                  false,
+                  messageData.type,
+                ),
+                isSeen:messageData.isSeen
               );
             },
           );
