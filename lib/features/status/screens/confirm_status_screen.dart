@@ -13,6 +13,7 @@ class ConfirmStatusScreen extends ConsumerWidget {
 
   void addStatus(WidgetRef ref, BuildContext context) {
     ref.read(statusControllerProvider).addStatus(file, context);
+    Navigator.pop(context);
   }
 
   @override
